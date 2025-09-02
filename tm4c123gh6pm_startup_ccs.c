@@ -46,6 +46,7 @@ extern void Switch_Handler(void);
 extern void Timer_Handler(void);
 extern void PlayClock_Timer_Handler(void);
 extern void GameTic_Timer_Handler(void);
+extern void ALICE_Button_Handler(void);
 
 //*****************************************************************************
 //
@@ -91,7 +92,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // GPIO Port A
     IntDefaultHandler,                      // GPIO Port B
     IntDefaultHandler,                      // GPIO Port C
-    IntDefaultHandler,                       // GPIO Port D
+    ALICE_Button_Handler,                       // GPIO Port D
     IntDefaultHandler,                      // GPIO Port E
     UART0_Handler,                          // UART0 Rx and Tx
     IntDefaultHandler,                      // UART1 Rx and Tx

@@ -1,0 +1,28 @@
+paddle positions 			(5 bits x 2) p1 p2
+powerup for each player		(1 bit  x 2) p1 p2
+powerup location (x,y)		(8 bits, 5 bits) pui
+powerup presence (?)		(1 bit)	pui
+ball position (x,y)			(8 bits, 5 bits) g	
+ball direction				(3 bits) g
+player scores				(some big number) p1 p2
+score threshold				(4 bits) g
+player colors				(3 bits x 2) p1 p2
+ball color					(3 bits) g
+time elapsed				(some big number) timer
+current ball speed			(3 bits) g
+game paused					(1 bit) g
+game over					(1 bit) g
+
+player1info	(5 + 1 + 7 + 3 = 16)			bits [ 0-4 = paddle position | 5 = powerup state | 6-12 = score | 13-15 = player color ]
+
+player2info	(5 + 1 + 7 + 3 = 16)			same
+
+general		(8 + 5 + 3 + 4 + 3 + 3 + 1 + 1 = 28)	bits [ 0-7 = ball x | 8-12 = ball y | 13-15 = ball direction | 16-19 = score threshold |
+													20-22 = ball color | 23-25 = ball speed | 26 = paused | 27 = game over | 
+													28 = player 1 won | 29 = player 2 won | 30 = round over | -31 = unused]
+
+powerupinfo	(8 + 5 + 1 = 14)				bits [ 0-7 = powerup x | 8-12 = powerup y | 13 = powerup presence | 14-15 = unused]
+
+poweruptime (16)							timer indicating time when powerup was activated
+
+timer		(16)							it's ... just a number
