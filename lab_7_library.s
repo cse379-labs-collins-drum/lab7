@@ -16,8 +16,180 @@
 	.global int2string
 	.global uart_interrupt_init
 	.global gpio_interrupt_init
+	.global UART0_Handler
+	.global Switch_Handler
 	.global simple_read_character	; read_character modified for interrupts
+	.global output_ansi_string
 	.global lab6
+
+black_back:		.string 27, "[40m",0
+red_back:		.string 27, "[41m",0
+green_back:		.string 27, "[42m",0
+yellow_back:	.string 27, "[43m",0
+blue_back:		.string 27, "[44m",0
+magenta_back:	.string 27, "[45m",0
+cyan_back:		.string 27, "[46m",0
+white_back:		.string 27, "[47m",0
+
+white_on_gray:		.string 27, "[48;5;243m", 27, "[38;5;15m", 0
+light_gray_back:	.string 27, "[48;5;252m", 0
+
+
+
+red_back_ptr:		.word red_back
+black_back_ptr:		.word black_back
+green_back_ptr:		.word green_back
+yellow_back_ptr:	.word yellow_back
+blue_back_ptr:		.word blue_back
+magenta_back_ptr:	.word magenta_back
+cyan_back_ptr:		.word cyan_back
+white_back_ptr:		.word white_back
+
+white_on_gray_ptr:		.word white_on_gray
+light_gray_back_ptr:	.word light_gray_back
+
+output_ansi_string:
+
+	PUSH {r4-r12,lr}
+
+	MOV r5, r0
+
+ansi_output_loop:
+
+	LDRB r4, [r5]
+
+	ADD r5, r5, #1
+
+	CMP r4, #0			; Check if the character is 0
+	BEQ exit_ansi			; if it is, exit the subroutine
+
+
+	; This checks if the character is any of the format codes,
+	; and branches to the appropriate section if necessary
+
+	CMP r4, #0x10
+	BEQ do_black_back
+
+	CMP r4, #0x11
+	BEQ do_red_back
+
+	CMP r4, #0x12
+	BEQ do_green_back
+
+	CMP r4, #0x13
+	BEQ do_yellow_back
+
+	CMP r4, #0x14
+	BEQ do_blue_back
+
+	CMP r4, #0x15
+	BEQ do_magenta_back
+
+	CMP r4, #0x16
+	BEQ do_cyan_back
+
+	CMP r4, #0x17
+	BEQ do_white_back
+
+	CMP r4, #0x18
+	BEQ do_white_on_gray
+
+	CMP r4, #0x19
+	BEQ do_light_gray_back
+
+	; Here, the character is not a format code, so we just
+	; output the character
+
+	MOV r0, r4
+
+	BL output_character
+
+	B ansi_output_loop
+
+
+	; All of these do_XXXXX sections follow the same format:
+	; Load the address of the relevant escape sequence into
+	; r0, then output the string via a call to output_string,
+	; and finally, loop back to ansi_output_loop
+
+do_red_back:
+
+	LDR r0, red_back_ptr
+
+	BL output_string
+
+	B ansi_output_loop
+
+do_black_back:
+
+	LDR r0, black_back_ptr
+
+	BL output_string
+	B ansi_output_loop
+
+do_green_back:
+
+        LDR r0, green_back_ptr
+
+        BL output_string
+        B ansi_output_loop
+
+do_yellow_back:
+
+        LDR r0, yellow_back_ptr
+
+        BL output_string
+        B ansi_output_loop
+
+do_blue_back:
+
+        LDR r0, blue_back_ptr
+
+        BL output_string
+        B ansi_output_loop
+
+do_magenta_back:
+
+        LDR r0, magenta_back_ptr
+
+        BL output_string
+        B ansi_output_loop
+
+do_cyan_back:
+
+        LDR r0, cyan_back_ptr
+
+        BL output_string
+        B ansi_output_loop
+
+do_white_back:
+
+        LDR r0, white_back_ptr
+
+        BL output_string
+        B ansi_output_loop
+
+do_white_on_gray:
+
+        LDR r0, white_on_gray_ptr
+
+        BL output_string
+        B ansi_output_loop
+
+do_light_gray_back:
+
+        LDR r0, light_gray_back_ptr
+
+        BL output_string
+        B ansi_output_loop
+
+exit_ansi:
+
+
+	POP {r4-r12,lr}
+
+	MOV pc,lr
+
 
 
 uart_init:
@@ -735,25 +907,6 @@ gpio_interrupt_init:
 
 	MOV pc, lr
 
-
-Switch_Handler:
-
-	; Your code for your UART handler goes here.
-	; Remember to preserver registers r4-r12 by pushing then popping
-	; them to & from the stack at the beginning & end of the handler
-
-	PUSH {r4-r12,lr}			; Save registers to stack
-
-								; Clear interrupt
-	MOV r4, #0x541C				; Put GPIOCR offset with Port F Base Address in r4 (LSB)
-	MOVT r4, #0x04002			; Put GPIO Port F Base Address in r4 (MSB)
-	LDRB r5, [r4] 				; Load data from UARTCIR in r5
-	MOV r6, #0x10				; Prepare r6 for masking (LSB)
-	ORR r5, r5, r6				; Set 4th bit (RXIC) in r5 (XXX1 XXXX)
-	STRB r5, [r4]				; Store value from r5 in UARTCIR
-
-
-
 exit_GPIO_Handler:
 	POP {r4-r12,lr}				; Restore registers from stack
 	BX lr 						; Return
@@ -791,4 +944,4 @@ loopfortime:
 	MOV pc, lr
 
 
-.end
+	.end
